@@ -8,6 +8,8 @@ EVONET.config = {
                                         // fertile tiles per tick
   MAX_FOOD_VALUE: 100,                  // The maximum food value a tile can
                                         // have.
+  INIT_FOOD_VALUE: 40,                   // The food value all tiles are
+                                        // initialized with.
   FOOD_VALUE_AFFECTS_NEIGHBORS: 60,     // Tiles with this food value make
                                         // neighboring tiles grow.
   FOOD_VALUE_IS_FERTILE: 50,            // Tiles with this food value can always
@@ -19,8 +21,9 @@ EVONET.config = {
                                         // have before it dies
   MIN_EDIBLE: 0,                        // The minimum food value a tile must
                                         // have so that a creature can eat
-  MAX_EAT_VALUE: 20                     // The maximum food value a creature can
+  MAX_EAT_VALUE: 20,                    // The maximum food value a creature can
                                         // eat per tick
+  MUTATION_RATE: 1                      // Maximum change of weight
 }
 
 EVONET.constants = {

@@ -21,39 +21,36 @@ EVONET.network.NeuronConnection = function (entryNeuron, startWeight) {
   this.getValue = () => {
     return entryNeuron.getValue() * weight
   }
-  this.clone = () => {
-    const copy = new EVONET.network.NeuronConnection(entryNeuron.clone(), weight)
-    copy.weight += Math.random() - .5
-    return copy
-  }
 }
 
 EVONET.network.WorkingNeuron = function (name) {
   EVONET.network.Neuron.call(this, name)
-  this.connections = []
+  const connections = []
   this.addConnection = (c) => {
-    this.connections.push(c)
+    connections.push(c)
   }
   this.getValue = () => {
     let value = 0
-    this.connections.forEach((c) => {
+    connections.forEach((c) => {
       value += c.getValue()
     })
     return EVONET.math.sigmoid(value)
   }
+  this.getConnections = () => connections
   this.clone = () => {
-    const copy = new EVONET.network.WorkingNeuron(name)
-    this.connections.forEach((connection) => {
-      copy.addConnection(connection.clone())
-    })
-    return copy
+    return new EVONET.network.WorkingNeuron(name)
+  }
+  this.randomMutation = () => {
+    const index = Math.floor(Math.random() * (connections.length))
+    const c = connections[index]
+    c.setWeight(c.getWeight() + (Math.random() - .5) * EVONET.config.MUTATION_RATE)
   }
 }
 
-EVONET.network.NeuronalNetwork = function () {
-  let inputNeurons = [],
-      hiddenNeurons = [],
-      outputNeurons = []
+EVONET.network.NeuralNetwork = function () {
+  let inputNeurons = this.inputNeurons = [],
+      hiddenNeurons = this.hiddenNeurons = [],
+      outputNeurons = this.outputNeurons = []
 
   this.getInputByName = (name) => {
     let index
@@ -78,11 +75,11 @@ EVONET.network.NeuronalNetwork = function () {
   }
 
   this.addInputs = (inputs) => {
-    inputNeurons = inputNeurons.concat(inputs)
+    Array.prototype.push.apply(inputNeurons, inputs)
   }
 
   this.addOutputs = (outputs) => {
-    outputNeurons = outputNeurons.concat(outputs)
+    Array.prototype.push.apply(outputNeurons, outputs)
   }
 
   this.generateHiddenNeurons = (amount) => {
@@ -92,27 +89,84 @@ EVONET.network.NeuronalNetwork = function () {
     }
   }
   this.generateFullMesh = () => {
-    let hidden, input, output, indexI, indexH, indexO
+    let indexI, indexH, indexO
     for (indexH in hiddenNeurons) {
-      hidden = hiddenNeurons[indexH]
+      const hidden = hiddenNeurons[indexH]
       for (indexI in inputNeurons) {
-        input = inputNeurons[indexI]
-        hidden.addConnection(new EVONET.network.NeuronConnection(input, Math.random() - .5))
+        const input = inputNeurons[indexI]
+        hidden.addConnection(new EVONET.network.NeuronConnection(input))
       }
     }
     for (indexO in outputNeurons) {
-      output = outputNeurons[indexO]
+      const output = outputNeurons[indexO]
       for (indexH in hiddenNeurons) {
-        hidden = hiddenNeurons[indexH]
-        output.addConnection(new EVONET.network.NeuronConnection(hidden, Math.random() - .5))
+        const hidden = hiddenNeurons[indexH]
+        output.addConnection(new EVONET.network.NeuronConnection(hidden))
       }
     }
   }
 
+  this.randomizeAllWeights = () => {
+    const setRandom = (connection) => {
+      connection.setWeight(Math.random() - .5)
+    }
+
+    let indexH, indexO
+    for (indexH in hiddenNeurons) {
+      const hidden = hiddenNeurons[indexH]
+      hidden.getConnections().forEach(setRandom)
+    }
+    for (indexO in outputNeurons) {
+      const output = outputNeurons[indexO]
+      output.getConnections().forEach(setRandom)
+    }
+  }
+
   this.clone = () => {
-    const copy = new EVONET.network.NeuronalNetwork()
+    const copy = new EVONET.network.NeuralNetwork()
     copy.addInputs(inputNeurons.map((input) => input.clone()))
     copy.addOutputs(outputNeurons.map((output) => output.clone()))
+
+    copy.generateHiddenNeurons(hiddenNeurons.length)
+    copy.generateFullMesh()
+
+    let indexH
+    for (indexH in copy.hiddenNeurons) {
+      const hiddenC = copy.hiddenNeurons[indexH].getConnections()
+      const thisHiddenC = this.hiddenNeurons[indexH].getConnections()
+      let indexC
+      for (indexC in hiddenC) {
+        hiddenC[indexC].setWeight(thisHiddenC[indexC].getWeight())
+      }
+    }
+
+    let indexO
+    for (indexO in copy.outputNeurons) {
+      const outputC = copy.outputNeurons[indexO].getConnections()
+      const thisOutputC = this.outputNeurons[indexO].getConnections()
+      let indexC
+      for (indexC in outputC) {
+        outputC[indexC].setWeight(thisOutputC[indexC].getWeight())
+      }
+    }
+
+    copy.randomizeWeights(10)
+
     return copy
+  }
+
+  this.randomizeWeights = (amount) => {
+    const numberOfNeurons = hiddenNeurons.length + outputNeurons.length - 2
+    let i = 0
+    for (; i < amount; i += 1) {
+      let neuron
+      const neuronIndex = Math.round(Math.random() * numberOfNeurons)
+      if (neuronIndex < hiddenNeurons.length) {
+        neuron = hiddenNeurons[neuronIndex]
+      } else {
+        neuron = outputNeurons[neuronIndex - hiddenNeurons.length]
+      }
+      neuron.randomMutation()
+    }
   }
 }

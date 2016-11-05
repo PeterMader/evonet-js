@@ -34,16 +34,23 @@ EVONET.game = {
     })
     const creatures = EVONET.creatures.manager.creatures
     creatures.forEach((creature) => {
+      const pos = creature.getPosition()
+      const feelerPos = creature.getFeelerPosition()
+
+      // Draw the line between the body and the feeler
+      ctx.strokeStyle = '#888888'
+      ctx.beginPath()
+      ctx.moveTo(pos.x * TILE_WIDTH, pos.y * TILE_HEIGHT)
+      ctx.lineTo(feelerPos.x * TILE_WIDTH, feelerPos.y * TILE_HEIGHT)
+      ctx.stroke()
 
       // Draw the body
       ctx.fillStyle = creature.color.string
-      const pos = creature.getPosition()
-      ctx.fillRect(pos.x * TILE_WIDTH, pos.y * TILE_HEIGHT, 10, 10)
+      ctx.fillRect(pos.x * TILE_WIDTH - 5, pos.y * TILE_HEIGHT - 5, 10, 10)
 
       // Draw the feeler
       ctx.fillStyle = '#000000'
-      const feelerPos = creature.getFeelerPosition()
-      ctx.fillRect(feelerPos.x * TILE_WIDTH, feelerPos.y * TILE_HEIGHT, 5, 5)
+      ctx.fillRect(feelerPos.x * TILE_WIDTH - 1, feelerPos.y * TILE_HEIGHT - 1, 3, 3)
 
       // Draw the stats
       ctx.fillText(creature.getAge().toFixed(1), pos.x * TILE_WIDTH + 20, pos.y * TILE_HEIGHT)

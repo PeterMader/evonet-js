@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exit) {
       return
     }
-    requestAnimationFrame(mainLoop)
+    window.requestAnimationFrame(mainLoop)
   }
 
   mainLoop()

@@ -27,8 +27,8 @@ EVONET.creatures.manager = {
 
 EVONET.creatures.Creature = function (parent) {
   let brain
-  let x = Math.random() * EVONET.config.GAME_WIDTH / 2 + 2,
-      y = Math.random() * EVONET.config.GAME_HEIGHT / 2 + 2,
+  let x = Math.random() * (EVONET.config.GAME_WIDTH - 2) + 2,
+      y = Math.random() * (EVONET.config.GAME_HEIGHT - 2) + 2,
       energy = EVONET.config.ENERGY_AT_BIRTH,
       age = 0,
       viewAngle = 0,
@@ -74,7 +74,7 @@ EVONET.creatures.Creature = function (parent) {
     outBirth = brain.getOutputByName(consts.OUT_BIRTH)
   } else {
     this.color = EVONET.math.randomColor()
-    brain = this.brain = new EVONET.network.NeuronalNetwork()
+    brain = this.brain = new EVONET.network.NeuralNetwork()
     inBias = new EVONET.network.Neuron(consts.IN_BIAS)
     inFoodValuePosition = new EVONET.network.Neuron(consts.IN_FOOD_VALUE_POSITION)
     inFoodValueFeeler = new EVONET.network.Neuron(consts.IN_FOOD_VALUE_FEELER)
@@ -98,14 +98,15 @@ EVONET.creatures.Creature = function (parent) {
       inAge
     ])
     brain.addOutputs([outRotate, outMove, outEat, outBirth])
+
+    brain.generateHiddenNeurons(10)
+    brain.generateFullMesh()
+    brain.randomizeAllWeights()
   }
 
-  brain.generateHiddenNeurons(10)
-  brain.generateFullMesh()
-
   const calculateFeelerPos = () => {
-    feelerX = x + Math.sin(viewAngle) * .1
-    feelerY = y - Math.cos(viewAngle) * .1
+    feelerX = x + Math.cos(viewAngle)
+    feelerY = y + Math.sin(viewAngle)
   }
 
   const readSensors = () => {
@@ -162,18 +163,17 @@ EVONET.creatures.Creature = function (parent) {
       const child = new EVONET.creatures.Creature(this)
       energy -= EVONET.config.ENERGY_AT_BIRTH
       EVONET.creatures.manager.spawn(child)
-      console.log('Spawned a child!')
     }
   }
 
   this.update = () => {
-    calculateFeelerPos()
     positionTile = EVONET.map.getTile(x, y)
     feelerTile = EVONET.map.getTile(feelerX, feelerY)
     age += .1
     energy -= age * .5
     readSensors()
     act()
+    calculateFeelerPos()
   }
 
   this.getPosition = () => {
@@ -184,5 +184,7 @@ EVONET.creatures.Creature = function (parent) {
   }
   this.getAge = () => age
   this.getEnergy = () => energy
+
+  calculateFeelerPos()
 
 }

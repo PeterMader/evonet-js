@@ -3,7 +3,7 @@ EVONET.tiles = {}
 EVONET.tiles.Tile = function (x, y, type) {
   this.x = x
   this.y = y
-  let foodValue = type === EVONET.tiles.Tile.LAND ? 50 : 0
+  let foodValue = type === EVONET.tiles.Tile.LAND ? EVONET.config.INIT_FOOD_VALUE : 0
   this.grow = () => {
     if (!this.isLand()) {
       return
