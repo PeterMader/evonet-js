@@ -23,6 +23,7 @@ certain food value, the neighbouring tiles are also fertile.
 Every creature consists of its body and its feeler. Its has an age and energy
 value. When the creature is born, its age is 0; its energy is a certain value
 specified in the config file. This picture shows what creatures look like:
+
 ![A creature.](res/creature.png)
 
 The upper number shows the current age of the creature (2.3), the lower one
